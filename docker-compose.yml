@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  zookeeper:
+    hostname: zookeeper
+    image: wurstmeister/zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    expose:
+      - "2181"
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - '9092:9092'
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CONNECT_BOOTSTRAP_SERVERS: localhost:9092
+      KAFKA_CONNECT_REST_ADVERTISED_HOST_NAME: "localhost"
+  producer:
+    image: producer:latest
+    environment:
+      kafkaURL: kafka:9092
+    depends_on:
+      - kafka
+
+  consumer:
+    image: consumer:latest
+    depends_on:
+      - kafka
+      - mongo-db
+    environment:
+      kafkaURL: kafka:9092
+      mongoURL: mongodb://mongo-db:27017
+      dbName: example_kafka
+      collectionName: example_coll_kafka
+
+  mongo-db:
+    image: mongo:4.0
+
+    ports:
+      - "27072:27017"
+    environment:
+      -MONGO_INITDB_DATABASE: "example_kafka"
