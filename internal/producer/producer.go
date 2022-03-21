@@ -2,6 +2,7 @@ package producer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/EgMeln/touchKafka/internal/config"
 	"github.com/segmentio/kafka-go"
@@ -30,11 +31,15 @@ func (prod Producer) ProduceMessages() {
 	t := time.Now()
 	for i := 0; ; i++ {
 		key := fmt.Sprintf("Key-%d", i)
+		message, err := json.Marshal("this is message " + strconv.Itoa(i))
+		if err != nil {
+			log.Fatalf("marshal error")
+		}
 		msg := kafka.Message{
 			Key:   []byte(key),
-			Value: []byte("this is message" + strconv.Itoa(i)),
+			Value: message,
 		}
-		err := prod.Producer.WriteMessages(context.Background(), msg)
+		err = prod.Producer.WriteMessages(context.Background(), msg)
 		if err != nil {
 			log.Info(err)
 		} else {
