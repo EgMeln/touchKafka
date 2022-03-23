@@ -21,6 +21,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_CONNECT_BOOTSTRAP_SERVERS: localhost:9092
       KAFKA_CONNECT_REST_ADVERTISED_HOST_NAME: "localhost"
+
   producer:
     image: producer:latest
     environment:
@@ -33,16 +34,24 @@ services:
     depends_on:
       - kafka
       - mongo-db
+      - postgres
     environment:
       kafkaURL: kafka:9092
       mongoURL: mongodb://mongo-db:27017
       dbName: example_kafka
       collectionName: example_coll_kafka
-
+      postgresURL: postgres://egormelnikov:54236305@postgres:5432/egormelnikov
   mongo-db:
     image: mongo:4.0
-
     ports:
       - "27072:27017"
     environment:
       -MONGO_INITDB_DATABASE: "example_kafka"
+  postgres:
+    image: postgres
+    ports:
+      - "5444:5432"
+    environment:
+      POSTGRES_DB: "egormelnikov"
+      POSTGRES_USER: "egormelnikov"
+      POSTGRES_PASSWORD: "54236305"

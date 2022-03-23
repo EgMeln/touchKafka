@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/EgMeln/touchKafka/internal/config"
 	"github.com/EgMeln/touchKafka/internal/producer"
 	log "github.com/sirupsen/logrus"
@@ -24,10 +25,10 @@ func main() {
 	}()
 	log.Println("producer successfully created")
 
-	prod.ProduceMessages()
+	ctx := context.Background()
+	err = prod.ProduceMessages(ctx)
 	if err != nil {
 		log.Fatalf("error while sending messages - %e", err)
 	}
 	log.Println("successfully send messages")
-
 }
