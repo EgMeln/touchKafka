@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -12,19 +11,19 @@ type MongoRepository struct {
 	Collection *mongo.Collection
 }
 
-func GetMongoCollection(mongoURL, dbName, collectionName string) *MongoRepository {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongoURL))
+func GetMongoCollection(ctx context.Context, mongoURL, dbName, collectionName string) (*MongoRepository, error) {
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURL))
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("mongo connect error %v", err)
 	}
-	err = client.Ping(context.Background(), nil)
+	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("client ping error %v", err)
 	}
 	fmt.Println("Connected to MongoDB ... !!")
 	db := client.Database(dbName)
 	collection := db.Collection(collectionName)
 	return &MongoRepository{
 		Collection: collection,
-	}
+	}, nil
 }

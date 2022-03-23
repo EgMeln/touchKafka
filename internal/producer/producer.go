@@ -26,20 +26,20 @@ func NewProducer(cfg *config.Config, url *string) *Producer {
 	return &Producer{Producer: &conn}
 }
 
-func (prod Producer) ProduceMessages() {
+func (prod Producer) ProduceMessages(ctx context.Context) error {
 	log.Printf("Start producing")
 	t := time.Now()
 	for i := 0; ; i++ {
 		key := fmt.Sprintf("Key-%d", i)
 		message, err := json.Marshal("this is message " + strconv.Itoa(i))
 		if err != nil {
-			log.Fatalf("marshal error")
+			return fmt.Errorf("marshal error")
 		}
 		msg := kafka.Message{
 			Key:   []byte(key),
 			Value: message,
 		}
-		err = prod.Producer.WriteMessages(context.Background(), msg)
+		err = prod.Producer.WriteMessages(ctx, msg)
 		if err != nil {
 			log.Info(err)
 		} else {

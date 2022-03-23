@@ -17,7 +17,7 @@ type Consumer struct {
 	Consumer *kafka.Conn
 }
 
-func NewConsumer(cfg *config.Config, url *string) (*Consumer, error) {
+func NewConsumer(ctx context.Context, cfg *config.Config, url *string) (*Consumer, error) {
 	//conn := kafka.NewReader(kafka.ReaderConfig{
 	//	Brokers:  []string{*url},
 	//	GroupID:  cfg.KafkaGroupID,
@@ -25,13 +25,13 @@ func NewConsumer(cfg *config.Config, url *string) (*Consumer, error) {
 	//	MinBytes: 10e3, // 10KB
 	//	MaxBytes: 10e6, // 10MB
 	//})
-	conn, err := kafka.DialLeader(context.Background(), "tcp", *url, cfg.KafkaTopic, 0)
+	conn, err := kafka.DialLeader(ctx, "tcp", *url, cfg.KafkaTopic, 0)
 	if err != nil {
 		return nil, fmt.Errorf("can't create new consumer %v", err)
 	}
 	return &Consumer{Consumer: conn}, nil
 }
-func (cons Consumer) ConsumeMessages(connection *repository.PostgresConnection) error {
+func (cons Consumer) ConsumeMessages(ctx context.Context, connection *repository.PostgresConnection) error {
 	pgxBatch := &pgx.Batch{}
 	batch := cons.Consumer.ReadBatch(10e3, 10e6)
 	count := 0
@@ -54,7 +54,7 @@ func (cons Consumer) ConsumeMessages(connection *repository.PostgresConnection) 
 		count++
 		log.Info("Inserted : ", message)
 		if count%2000 == 0 {
-			batchResult := connection.Conn.SendBatch(context.Background(), pgxBatch)
+			batchResult := connection.Conn.SendBatch(ctx, pgxBatch)
 			ct, err := batchResult.Exec()
 			if err != nil {
 				return fmt.Errorf("can't insert messages into repository %v", err)
