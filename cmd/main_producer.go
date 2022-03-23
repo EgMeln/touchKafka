@@ -29,5 +29,4 @@ func main() {
 		log.Fatalf("error while sending messages - %e", err)
 	}
 	log.Println("successfully send messages")
-
 }

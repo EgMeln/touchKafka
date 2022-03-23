@@ -55,19 +55,18 @@ func (cons Consumer) ConsumeMessages(connection *repository.PostgresConnection) 
 		fmt.Println("Inserted : ", message)
 		if count%2000 == 0 {
 			batchResult := connection.Conn.SendBatch(context.Background(), pgxBatch)
-			for m := 0; m < 2000; m++ {
-				ct, err := batchResult.Exec()
-				if err != nil {
-					return fmt.Errorf("can't insert messages into repository %v", err)
-				}
-				if ct.RowsAffected() != 1 {
-					return fmt.Errorf("RowsAffected() => %v, want %v", ct.RowsAffected(), 1)
-				}
+			ct, err := batchResult.Exec()
+			if err != nil {
+				return fmt.Errorf("can't insert messages into repository %v", err)
+			}
+			if ct.RowsAffected() != 1 {
+				return fmt.Errorf("RowsAffected() => %v, want %v", ct.RowsAffected(), 1)
 			}
 			log.Info("send 2000 messages")
+			pgxBatch = &pgx.Batch{}
 			log.Info(time.Since(t))
 			t = time.Now()
-			time.Sleep(2 * time.Second)
+			time.Sleep(1 * time.Second)
 		}
 	}
 	if err := batch.Close(); err != nil {
