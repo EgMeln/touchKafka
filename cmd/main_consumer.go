@@ -27,7 +27,7 @@ func main() {
 	conn := repository.GetPostgresConnection(dbNamePostgres)
 	defer func() {
 		if err = cons.Consumer.Close(); err != nil {
-			log.Fatalf("error closing 2 connection %v", err)
+			log.Fatalf("error closing connection %v", err)
 		}
 	}()
 	log.Println("consumer successfully created")

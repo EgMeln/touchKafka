@@ -48,11 +48,11 @@ func (cons Consumer) ConsumeMessages(connection *repository.PostgresConnection) 
 		if err != nil {
 			return fmt.Errorf("can't parse message")
 		}
-		log.Info(message.Key)
-		log.Info(message.Message)
+		//log.Info(message.Key)
+		//log.Info(message.Message)
 		pgxBatch.Queue("insert into kafka(key, message) values($1, $2)", message.Key, message.Message)
 		count++
-		fmt.Println("Inserted : ", message)
+		log.Info("Inserted : ", message)
 		if count%2000 == 0 {
 			batchResult := connection.Conn.SendBatch(context.Background(), pgxBatch)
 			ct, err := batchResult.Exec()
@@ -62,8 +62,8 @@ func (cons Consumer) ConsumeMessages(connection *repository.PostgresConnection) 
 			if ct.RowsAffected() != 1 {
 				return fmt.Errorf("RowsAffected() => %v, want %v", ct.RowsAffected(), 1)
 			}
+			pgxBatch = new(pgx.Batch)
 			log.Info("send 2000 messages")
-			pgxBatch = &pgx.Batch{}
 			log.Info(time.Since(t))
 			t = time.Now()
 			time.Sleep(1 * time.Second)
